@@ -1,0 +1,54 @@
+authors
+    name vc150 /nn
+    slug vc180 /nn
+    email vc255
+    bio clob
+    avatar_url vc500
+    active_yn vc1 /values Y,N
+
+categories
+    name vc150 /nn
+    slug vc180 /nn
+    description vc500
+    active_yn vc1 /values Y,N
+
+posts
+    category_id /fk categories
+    author_id /fk authors
+    title vc250 /nn
+    slug vc250 /nn
+    excerpt vc500
+    content clob
+    featured_image_url vc500
+    status vc20 /values DRAFT,PUBLISHED,ARCHIVED
+    published_at timestamp
+    featured_yn vc1 /values Y,N
+
+tags
+    name vc100 /nn
+    slug vc120 /nn
+
+post_tags
+    post_id /fk posts
+    tag_id /fk tags
+
+events
+    title vc250 /nn
+    slug vc250 /nn
+    description clob
+    event_date timestamp
+    location vc250
+    event_url vc500
+    status vc20 /values UPCOMING,COMPLETED,CANCELLED
+
+certifications
+    name vc250 /nn
+    issuer vc150
+    credential_id vc250
+    credential_url vc500
+    issued_date date
+    expiration_date date
+    description clob
+    active_yn vc1 /values Y,N
+
+# settings = {"apex":"Y","auditcols":true,"db":"23","pk":"IDENTITY"}

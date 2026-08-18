@@ -1,0 +1,16 @@
+# ---------------------------------------------------------------------------
+# TRINITY Platform
+# Git repository attributes
+# ---------------------------------------------------------------------------
+
+# Hand-maintained documentation and source use LF.
+*.md text eol=lf
+*.quicksql text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Oracle-generated artifacts are preserved exactly as exported.
+# Do not normalize their line endings and do not report their
+# original whitespace as repository formatting errors.
+apex/exports/f109.sql -text -whitespace
+database/ddl/TRINITY_V1_SCHEMA.sql -text -whitespace

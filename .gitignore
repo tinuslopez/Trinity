@@ -1,0 +1,93 @@
+# ---------------------------------------------------------------------------
+# TRINITY Platform
+# Git ignore rules
+# ---------------------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Finder metadata
+.Spotlight-V100
+.Trashes
+
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
+
+# JetBrains IDEs
+.idea/
+*.iml
+
+# Temporary / backup files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+*.orig
+
+# Logs
+*.log
+logs/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# OCI local configuration and credentials
+.oci/
+oci_api_key.pem
+oci_api_key_public.pem
+
+# Oracle Wallets / database credentials
+Wallet_*/
+wallet/
+*.sso
+*.ora
+cwallet.sso
+ewallet.p12
+
+# Local SQLcl / SQL Developer artifacts
+.history
+sqlcl_history
+.sqlcl/
+.sqldeveloper/
+
+# Generated archives and local packaging
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Local exports / scratch directories
+tmp/
+temp/
+scratch/
+
+# Screenshots and local evidence that have not been curated for publication
+Screenshot*.png
+Screenshot*.jpg
+Screen Shot*.png
+Screen Shot*.jpg
+
+# OS / editor caches
+.cache/
+
+# ---------------------------------------------------------------------------
+# Notes
+# ---------------------------------------------------------------------------
+# Oracle APEX application exports under apex/exports/ are intentionally tracked.
+# Oracle database DDL and Quick SQL sources under database/ are intentionally tracked.
+# Curated architecture assets under docs/architecture/ are intentionally tracked.
