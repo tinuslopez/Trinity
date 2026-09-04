@@ -1,10 +1,10 @@
 # TRINITY Platform — Database Engineering
 
-**Relational data model and Oracle DDL for TRINITY Platform**
+**Relational data model, Oracle DDL baseline, and controlled schema migrations**
 
-This directory contains the database source artifacts for the TRINITY Platform v1 engineering baseline.
+This directory contains the database source artifacts for TRINITY Platform.
 
-The model was designed with Oracle Quick SQL and implemented on Oracle Autonomous AI Database 26ai. The generated DDL defines the current relational structure, supporting indexes, referential relationships, and automatic audit triggers used by the Oracle APEX application.
+The original v1 relational model was designed with Oracle Quick SQL and implemented on Oracle Autonomous AI Database 26ai. The original generated DDL is preserved as a baseline, while structural changes applied after that baseline are captured as ordered migration scripts.
 
 ---
 
@@ -15,6 +15,9 @@ database/
 ├── README.md
 ├── ddl/
 │   └── TRINITY_V1_SCHEMA.sql
+├── migrations/
+│   ├── 001_add_event_featured_image.sql
+│   └── 002_certifications_active_default.sql
 └── quicksql/
     └── trinity-v1.quicksql
 ```
@@ -22,86 +25,79 @@ database/
 | Artifact | Purpose |
 |---|---|
 | `quicksql/trinity-v1.quicksql` | Original Quick SQL source model |
-| `ddl/TRINITY_V1_SCHEMA.sql` | Generated and executed Oracle DDL |
+| `ddl/TRINITY_V1_SCHEMA.sql` | Original generated and executed Oracle DDL baseline |
+| `migrations/001_add_event_featured_image.sql` | Adds event featured-image URL support |
+| `migrations/002_certifications_active_default.sql` | Normalizes Certification Boolean state and enforces `DEFAULT TRUE NOT NULL` |
 
-The Quick SQL source represents the logical input used to generate the physical database implementation. The DDL is the executable representation of that model.
+The generated DDL is intentionally preserved rather than rewritten to make it appear as if later changes existed in the original baseline.
 
 ---
 
 ## Database Baseline
 
-| Property | Current baseline |
+| Property | Current implementation |
 |---|---|
 | Platform | Oracle Autonomous AI Database 26ai |
 | Application integration | Oracle APEX |
 | Parsing schema | `WKSP_TRINITY` |
-| Quick SQL generator | Quick SQL 1.2.9 |
 | Tables | 7 |
 | Supporting indexes | 4 |
 | Audit triggers | 7 |
 | Primary-key strategy | Identity-generated `NUMBER` |
 | Audit integration | APEX session user with database-user fallback |
+| Schema evolution | Ordered SQL migrations |
 
-> `TRINITY_V1_SCHEMA` is the name of the SQL script artifact. It is **not** the Oracle parsing schema. The current APEX parsing schema is `WKSP_TRINITY`.
+> `TRINITY_V1_SCHEMA` is the SQL script name. It is **not** the parsing schema. The current APEX parsing schema is `WKSP_TRINITY`.
 
 ---
 
 ## Relational Model
 
-The v1 database contains seven tables.
+The database contains seven tables:
+
+```text
+AUTHORS
+CATEGORIES
+POSTS
+TAGS
+POST_TAGS
+EVENTS
+CERTIFICATIONS
+```
 
 ### `AUTHORS`
 
-Stores author identity and profile information for published content.
+Stores author identity and publishing-profile information.
 
-Key attributes include:
-
-- `ID` — identity-generated primary key.
-- `NAME` — required author display name.
-- `SLUG` — required URL-oriented identifier.
-- `EMAIL` — optional contact attribute.
-- `BIO` — long-form author biography.
-- `AVATAR_URL` — optional image reference.
-- `ACTIVE_YN` — Boolean active-state flag.
-- Standard audit columns.
-
----
+Important attributes include `ID`, `NAME`, `SLUG`, `EMAIL`, `BIO`, `AVATAR_URL`, `ACTIVE_YN`, and standard audit columns.
 
 ### `CATEGORIES`
 
 Stores content classifications.
 
-Key attributes include:
-
-- `ID` — identity-generated primary key.
-- `NAME` — required category name.
-- `SLUG` — required URL-oriented identifier.
-- `DESCRIPTION` — optional category description.
-- `ACTIVE_YN` — Boolean active-state flag.
-- Standard audit columns.
-
----
+Important attributes include `ID`, `NAME`, `SLUG`, `DESCRIPTION`, `ACTIVE_YN`, and standard audit columns.
 
 ### `POSTS`
 
-Stores the primary publishing content managed by TRINITY.
+Stores article and publishing content.
 
-Key attributes include:
+Important attributes include:
 
-- `ID` — identity-generated primary key.
-- `CATEGORY_ID` — foreign key to `CATEGORIES`.
-- `AUTHOR_ID` — foreign key to `AUTHORS`.
-- `TITLE` — required post title.
-- `SLUG` — required URL-oriented identifier.
-- `EXCERPT` — short article summary.
-- `CONTENT` — long-form article content.
-- `FEATURED_IMAGE_URL` — optional image reference.
-- `STATUS` — publication lifecycle value.
-- `PUBLISHED_AT` — publication timestamp.
-- `FEATURED_YN` — Boolean featured-state flag.
-- Standard audit columns.
+```text
+ID
+CATEGORY_ID
+AUTHOR_ID
+TITLE
+SLUG
+EXCERPT
+CONTENT
+FEATURED_IMAGE_URL
+STATUS
+PUBLISHED_AT
+FEATURED_YN
+```
 
-The Oracle APEX application currently manages the publication states:
+Current application publication states:
 
 ```text
 DRAFT
@@ -109,213 +105,97 @@ PUBLISHED
 ARCHIVED
 ```
 
-These values are controlled at the application layer in the current baseline.
-
----
-
 ### `TAGS`
 
 Stores reusable content tags.
 
-Key attributes include:
-
-- `ID` — identity-generated primary key.
-- `NAME` — required tag name.
-- `SLUG` — required URL-oriented identifier.
-- Standard audit columns.
-
----
-
 ### `POST_TAGS`
 
-Implements the many-to-many relationship between posts and tags.
-
-Key attributes include:
-
-- `ID` — identity-generated primary key.
-- `POST_ID` — foreign key to `POSTS`.
-- `TAG_ID` — foreign key to `TAGS`.
-- Standard audit columns.
-
----
+Implements the many-to-many relationship between Posts and Tags.
 
 ### `EVENTS`
 
 Stores technical events and activities.
 
-Key attributes include:
-
-- `ID` — identity-generated primary key.
-- `TITLE` — required event title.
-- `SLUG` — required URL-oriented identifier.
-- `DESCRIPTION` — long-form event description.
-- `EVENT_DATE` — event timestamp.
-- `LOCATION` — optional event location.
-- `EVENT_URL` — optional external reference.
-- `STATUS` — event lifecycle value.
-- Standard audit columns.
-
-The source Quick SQL model defines the intended values:
+Current attributes include:
 
 ```text
-UPCOMING
-COMPLETED
-CANCELLED
+ID
+TITLE
+SLUG
+DESCRIPTION
+EVENT_DATE
+LOCATION
+EVENT_URL
+STATUS
+FEATURED_IMAGE_URL
 ```
 
----
+The post-baseline `FEATURED_IMAGE_URL` column is:
+
+```text
+VARCHAR2(500)
+NULL allowed
+```
+
+The value stores an image reference such as an OCI Object Storage object URL.
 
 ### `CERTIFICATIONS`
 
 Stores professional certification records.
 
-Key attributes include:
+Current attributes include:
 
-- `ID` — identity-generated primary key.
-- `NAME` — required certification name.
-- `ISSUER` — certification issuer.
-- `CREDENTIAL_ID` — optional credential identifier.
-- `CREDENTIAL_URL` — optional credential reference.
-- `ISSUED_DATE` — issue date.
-- `EXPIRATION_DATE` — expiration date when applicable.
-- `DESCRIPTION` — optional long-form description.
-- `ACTIVE_YN` — Boolean active-state flag.
-- Standard audit columns.
+```text
+ID
+NAME
+ISSUER
+CREDENTIAL_ID
+CREDENTIAL_URL
+ISSUED_DATE
+EXPIRATION_DATE
+DESCRIPTION
+ACTIVE_YN
+```
+
+The deployed active-state definition is:
+
+```text
+ACTIVE_YN BOOLEAN DEFAULT TRUE NOT NULL
+```
+
+This is a native SQL Boolean, not a `VARCHAR2(1)` Y/N flag.
 
 ---
 
 ## Core Relationships
-
-The primary relational structure is:
 
 ```text
 AUTHORS       1 ───────────< POSTS
                               │
 CATEGORIES    1 ───────────<  │
                               │
-                              │
 POSTS         1 ───────< POST_TAGS >─────── 1 TAGS
 ```
 
-In relational terms:
+Relational interpretation:
 
-- One author can be associated with many posts.
-- One category can be associated with many posts.
-- One post can be associated with many tags.
-- One tag can be associated with many posts.
-- `POST_TAGS` resolves the posts-to-tags many-to-many relationship.
-- `EVENTS` and `CERTIFICATIONS` are standalone entities in the current v1 baseline.
+- One Author can own many Posts.
+- One Category can classify many Posts.
+- Posts and Tags have a many-to-many relationship through `POST_TAGS`.
+- `EVENTS` and `CERTIFICATIONS` are standalone entities in the current model.
 
 ---
 
-## Primary Keys
+## Original Quick SQL Baseline
 
-Every table uses an Oracle identity-generated numeric primary key.
-
-Representative implementation:
-
-```sql
-id number generated by default on null as identity
-   constraint authors_id_pk primary key
-```
-
-This allows Oracle Database to generate identifiers while still permitting a supplied value when required by a controlled migration or import process.
-
----
-
-## Foreign Keys
-
-The current DDL implements four foreign-key relationships:
-
-```text
-POSTS.CATEGORY_ID   → CATEGORIES.ID
-POSTS.AUTHOR_ID     → AUTHORS.ID
-POST_TAGS.POST_ID   → POSTS.ID
-POST_TAGS.TAG_ID    → TAGS.ID
-```
-
-Representative implementation:
-
-```sql
-category_id number
-            constraint posts_category_id_fk
-            references categories
-```
-
-Foreign-key columns are indexed by the generated DDL.
-
----
-
-## Supporting Indexes
-
-The schema contains four explicit supporting indexes:
-
-```text
-POSTS_I1       → POSTS(CATEGORY_ID)
-POSTS_I2       → POSTS(AUTHOR_ID)
-POST_TAGS_I1   → POST_TAGS(POST_ID)
-POST_TAGS_I2   → POST_TAGS(TAG_ID)
-```
-
-These indexes support access paths involving the current foreign-key relationships.
-
----
-
-## Automatic Auditing
-
-Each table contains the following standard audit columns:
-
-```text
-CREATED
-CREATED_BY
-UPDATED
-UPDATED_BY
-```
-
-Seven `BEFORE INSERT OR UPDATE` triggers maintain these attributes automatically:
-
-```text
-AUTHORS_BIU
-CATEGORIES_BIU
-POSTS_BIU
-TAGS_BIU
-POST_TAGS_BIU
-EVENTS_BIU
-CERTIFICATIONS_BIU
-```
-
-The trigger logic uses the current Oracle APEX application user when an APEX session exists:
-
-```sql
-coalesce(
-    sys_context('APEX$SESSION','APP_USER'),
-    user
-)
-```
-
-On insert:
-
-- `CREATED` is populated with `SYSDATE`.
-- `CREATED_BY` is populated from the APEX session user or database user.
-
-On both insert and update:
-
-- `UPDATED` is populated with `SYSDATE`.
-- `UPDATED_BY` is populated from the APEX session user or database user.
-
-This provides application-aware attribution while preserving a database-user fallback for operations performed outside Oracle APEX.
-
----
-
-## Quick SQL Source
-
-The source model is stored at:
+The logical source model is stored at:
 
 ```text
 database/quicksql/trinity-v1.quicksql
 ```
 
-The model defines:
+The original model defines:
 
 ```text
 authors
@@ -327,27 +207,11 @@ events
 certifications
 ```
 
-The original generation metadata preserved in the exported DDL identifies:
-
-```text
-Quick SQL 1.2.9
-Generated: 2026-08-13 11:15:51 AM
-```
-
-The non-default Quick SQL settings recorded with the source are:
-
-```text
-apex      = Y
-auditcols = true
-db        = 23
-pk        = IDENTITY
-```
-
-The `db` value above is Quick SQL generation metadata and should not be interpreted as the deployed database service version. The implemented TRINITY environment uses Oracle Autonomous AI Database 26ai.
+The Quick SQL source provides traceability to the original v1 data-model intent.
 
 ---
 
-## DDL Artifact
+## Original DDL Baseline
 
 The generated implementation is stored at:
 
@@ -355,7 +219,7 @@ The generated implementation is stored at:
 database/ddl/TRINITY_V1_SCHEMA.sql
 ```
 
-The script contains the current v1 physical database baseline:
+The original baseline contains:
 
 ```text
 7 CREATE TABLE statements
@@ -363,124 +227,307 @@ The script contains the current v1 physical database baseline:
 7 CREATE OR REPLACE TRIGGER statements
 ```
 
-The source Quick SQL model and its generation metadata are also preserved as a comment at the end of the DDL file, providing traceability from logical definition to generated SQL.
+This file should remain unchanged unless there is a specific reason to regenerate the complete baseline.
+
+It represents the original physical starting point, not every subsequent schema change.
 
 ---
 
-## Current Integrity Scope
+## Migration Strategy
 
-The current baseline implements:
-
-- Primary-key constraints.
-- Foreign-key constraints.
-- Required columns where defined by the model.
-- Identity-based identifiers.
-- Automatic audit maintenance.
-- Supporting indexes for foreign-key columns.
-
-Some business rules currently remain at the Oracle APEX application layer rather than being enforced by database constraints. Examples include publication-state selections presented by APEX.
-
-Future hardening may evaluate database-level constraints for rules that should remain valid regardless of the calling application.
-
----
-
-## Deployment Notes
-
-The DDL should be reviewed before execution in any target environment.
-
-A high-level deployment sequence is:
+Structural changes made after the original DDL baseline are maintained under:
 
 ```text
-Quick SQL source
-       ↓
-Review generated DDL
-       ↓
-Execute schema objects
-       ↓
-Validate tables and constraints
-       ↓
-Validate indexes
-       ↓
-Validate audit triggers
-       ↓
-Import / validate Oracle APEX application
+database/migrations/
 ```
 
-The target Oracle environment must support the SQL features used by this baseline, including Oracle `BOOLEAN` table columns.
+Migration scripts are ordered numerically and should be applied in sequence.
 
-Environment-specific deployment automation is outside the current v1 repository baseline and will be documented as the project evolves.
+Current migrations:
+
+```text
+001_add_event_featured_image.sql
+002_certifications_active_default.sql
+```
+
+### Migration 001 — Event featured image
+
+Adds:
+
+```sql
+ALTER TABLE events
+ADD featured_image_url VARCHAR2(500);
+```
+
+Final deployed metadata:
+
+```text
+COLUMN_NAME  FEATURED_IMAGE_URL
+DATA_TYPE    VARCHAR2
+DATA_LENGTH  500
+NULLABLE     Y
+```
+
+### Migration 002 — Certification active-state hardening
+
+The original v1 DDL already defines `CERTIFICATIONS.ACTIVE_YN` as a native Oracle SQL `BOOLEAN`. This migration does **not** change the column data type.
+
+It normalizes existing null values and then enforces the final default and nullability rules:
+
+```text
+NULL  → TRUE
+TRUE  → TRUE
+FALSE → FALSE
+```
+
+Final deployed metadata:
+
+```text
+COLUMN_NAME   ACTIVE_YN
+DATA_TYPE     BOOLEAN
+NULLABLE      N
+DATA_DEFAULT  TRUE
+```
+
+The database therefore guarantees that every Certification has an explicit Boolean active state.
 
 ---
 
-## Validation
+## Why Migrations Are Separate
 
-After deployment, representative validation queries can include:
+TRINITY distinguishes between:
 
-```sql
-select table_name
-from user_tables
-order by table_name;
+```text
+Original baseline
+       │
+       ▼
+TRINITY_V1_SCHEMA.sql
+       │
+       ▼
+Post-baseline changes
+       │
+       ▼
+database/migrations/
+       │
+       ▼
+Current deployed schema
 ```
 
+This approach provides historical traceability, reviewable schema evolution, lower risk of silently rewriting generated artifacts, and a repeatable path for future deployments.
+
+---
+
+## Primary Keys
+
+Every table uses an Oracle identity-generated numeric primary key.
+
+Representative pattern:
+
 ```sql
-select constraint_name,
-       constraint_type,
-       table_name,
-       status
-from user_constraints
-where table_name in (
-    'AUTHORS',
-    'CATEGORIES',
-    'POSTS',
-    'TAGS',
-    'POST_TAGS',
-    'EVENTS',
-    'CERTIFICATIONS'
+id number generated by default on null as identity
+```
+
+Identity generation remains a database responsibility.
+
+---
+
+## Foreign Keys
+
+The core publishing model includes:
+
+```text
+POSTS.CATEGORY_ID   → CATEGORIES.ID
+POSTS.AUTHOR_ID     → AUTHORS.ID
+POST_TAGS.POST_ID   → POSTS.ID
+POST_TAGS.TAG_ID    → TAGS.ID
+```
+
+---
+
+## Supporting Indexes
+
+The original schema contains four explicit supporting indexes:
+
+```text
+POSTS_I1       → POSTS(CATEGORY_ID)
+POSTS_I2       → POSTS(AUTHOR_ID)
+POST_TAGS_I1   → POST_TAGS(POST_ID)
+POST_TAGS_I2   → POST_TAGS(TAG_ID)
+```
+
+---
+
+## Automatic Auditing
+
+Every entity contains:
+
+```text
+CREATED
+CREATED_BY
+UPDATED
+UPDATED_BY
+```
+
+Seven `BEFORE INSERT OR UPDATE` triggers maintain these values.
+
+Representative attribution logic:
+
+```sql
+coalesce(
+    sys_context('APEX$SESSION','APP_USER'),
+    user
 )
-order by table_name, constraint_type;
 ```
 
-```sql
-select trigger_name,
-       table_name,
-       status
-from user_triggers
-order by table_name, trigger_name;
-```
-
-These examples inspect the deployed state; they do not replace environment-specific release validation.
+This preserves application-aware attribution when an APEX session exists while retaining a database-user fallback.
 
 ---
 
-## Engineering Notes
+## Native Boolean Usage
 
-The database directory is treated as source-controlled engineering material.
+TRINITY uses Oracle SQL Boolean columns for applicable state flags.
 
-Changes to the model should follow this general discipline:
+For Certifications, the current rule is explicit:
 
-1. Update the logical Quick SQL source when the change originates in the model.
-2. Review the generated DDL.
-3. Assess migration impact before applying structural changes to an existing environment.
-4. Validate database objects after deployment.
-5. Validate dependent Oracle APEX functionality.
-6. Commit the model, implementation, and relevant documentation together when they represent one logical change.
+```text
+ACTIVE_YN BOOLEAN DEFAULT TRUE NOT NULL
+```
 
-Do not place credentials, Oracle Wallets, API keys, connection strings containing secrets, or environment-specific private configuration in this directory.
+Application presentation is intentionally separate from storage:
+
+```text
+Database TRUE  → APEX Yes
+Database FALSE → APEX No
+```
+
+Application components should preserve native Boolean session-state behavior for this column.
+
+---
+
+## OCI Object Storage Reference Model
+
+The database does not store Event image binary data.
+
+Instead:
+
+```text
+OCI Object Storage object
+        │
+        ▼
+Object URL
+        │
+        ▼
+EVENTS.FEATURED_IMAGE_URL
+```
+
+This keeps media content separate from relational metadata.
+
+The current approach stores a URL reference only. A more integrated upload workflow may be introduced later.
+
+---
+
+## Deployment Sequence
+
+A compatible deployment should conceptually follow:
+
+```text
+1. Review Quick SQL source
+2. Execute original DDL baseline
+3. Validate baseline objects
+4. Apply migrations in numeric order
+5. Validate current schema metadata
+6. Import / validate Oracle APEX application
+7. Validate application-to-database behavior
+```
+
+Do not apply migration scripts blindly to a schema whose current state is unknown.
+
+---
+
+## Representative Validation
+
+### Event featured-image column
+
+```sql
+select column_name,
+       data_type,
+       data_length,
+       nullable
+from user_tab_columns
+where table_name = 'EVENTS'
+  and column_name = 'FEATURED_IMAGE_URL';
+```
+
+Expected current state:
+
+```text
+FEATURED_IMAGE_URL | VARCHAR2 | 500 | Y
+```
+
+### Certification Boolean column
+
+```sql
+select column_name,
+       data_type,
+       nullable,
+       data_default
+from user_tab_columns
+where table_name = 'CERTIFICATIONS'
+  and column_name = 'ACTIVE_YN';
+```
+
+Expected current state:
+
+```text
+ACTIVE_YN | BOOLEAN | N | TRUE
+```
+
+---
+
+## Engineering Change Discipline
+
+```text
+Define change
+    ↓
+Assess deployed state
+    ↓
+Create ordered migration
+    ↓
+Review SQL
+    ↓
+Apply in development
+    ↓
+Validate metadata and data
+    ↓
+Validate dependent APEX behavior
+    ↓
+Update documentation
+    ↓
+Commit as one coherent change
+```
+
+Do not place credentials, Oracle Wallets, API keys, private connection strings, or environment secrets in this directory.
 
 ---
 
 ## Related Source
 
-Oracle APEX application source is maintained separately at:
+Oracle APEX application source:
 
 ```text
 apex/exports/f109.sql
 ```
 
-Architecture and implementation documentation is maintained under:
+Architecture documentation:
 
 ```text
-docs/
+docs/architecture/
 ```
 
-The separation keeps the database implementation independently reviewable while preserving traceability to the application that consumes it.
+Architecture decisions:
+
+```text
+docs/decisions/
+```
+
+The database directory is intended to remain independently reviewable while preserving traceability to the Oracle APEX application that consumes it.

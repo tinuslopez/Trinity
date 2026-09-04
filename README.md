@@ -1,13 +1,13 @@
 # TRINITY Platform
 
-**Oracle APEX + Autonomous AI Database 26ai on Oracle Cloud Infrastructure**
+**Oracle APEX + Oracle Autonomous AI Database 26ai on Oracle Cloud Infrastructure**
 
-TRINITY is a personal engineering platform focused on Oracle technologies, technical publishing, and hands-on experimentation with modern Oracle Database and application development capabilities.
+TRINITY is a personal engineering platform focused on Oracle technologies, technical publishing, and practical implementation of modern Oracle Database and Oracle APEX capabilities.
 
-The project is being developed as a real, version-controlled implementation rather than a demonstration-only repository. Its current baseline combines a relational data model, Oracle APEX application source, automated auditing, administrative content management, and architecture documentation.
+The project is developed as a real, version-controlled implementation. Its current engineering baseline combines a relational data model, Oracle APEX administrative content management, Oracle Autonomous AI Database 26ai, OCI Object Storage for selected media assets, automated auditing, source-controlled database migrations, and architecture documentation.
 
 > **Project status:** Active development<br>
-> **Current baseline:** Oracle APEX administrative CMS + Autonomous AI Database 26ai<br>
+> **Current baseline:** Oracle APEX administrative CMS + Autonomous AI Database 26ai + OCI Object Storage media integration<br>
 > **Primary purpose:** Professional engineering portfolio, Oracle platform development, and technical publishing
 
 ---
@@ -17,119 +17,146 @@ The project is being developed as a real, version-controlled implementation rath
 | Area | Current implementation |
 |---|---|
 | Cloud platform | Oracle Cloud Infrastructure |
+| Region | `mx-monterrey-1` |
 | Database | Oracle Autonomous AI Database 26ai |
 | Database workload | APEX |
-| Application layer | Oracle APEX 26.1.3 |
+| Application layer | Oracle APEX 26.1.x |
 | APEX application | TRINITY Platform |
-| Application ID | 109 |
+| Application ID | `109` |
 | Parsing schema | `WKSP_TRINITY` |
 | Database model | 7 tables |
-| Database indexes | 4 |
+| Supporting indexes | 4 |
 | Audit triggers | 7 |
-| APEX pages | 9 |
-| APEX page items | 38 |
-| APEX processes | 12 |
-| APEX regions | 15 |
-| APEX buttons | 16 |
-| Dynamic Actions | 3 |
-| Shared LOVs | 3 |
+| APEX pages | 13 |
+| Media storage | OCI Object Storage for selected event images |
 | Source control | Git + GitHub |
 
-The APEX application export and database DDL in this repository are direct engineering artifacts from the current TRINITY implementation.
+The Oracle APEX export and database artifacts in this repository represent the current source-controlled TRINITY implementation.
 
 ---
 
-## Architecture at a Glance
+## Current Architecture
 
 ```mermaid
 flowchart LR
-    U["Developer / Administrator"] -->|"HTTPS / ORDS"| A["Oracle APEX 26.1.3<br/>Application 109"]
-    A --> D["Autonomous AI Database 26ai"]
+    A["Authenticated Administrator"] -->|"HTTPS / ORDS"| X["Oracle APEX<br/>Application 109"]
+    X --> D["Oracle Autonomous AI Database 26ai"]
     D --> S["WKSP_TRINITY"]
-    S --> C["Content & Portfolio Data"]
+    S --> C["Posts, Authors, Categories,<br/>Events, Certifications"]
+
+    A -->|"Manual media upload"| O["OCI Object Storage"]
+    O -->|"Object URL"| X
+    X -->|"Persists media URL metadata"| D
 ```
 
-The current solution uses the APEX workload of Autonomous AI Database and does **not** require a separate OCI Compute instance for the implemented baseline.
+The current application does **not** require a dedicated OCI Compute instance.
 
-### Current application scope
-
-```mermaid
-flowchart TB
-    ADMIN["Authenticated Administrator"]
-    APEX["TRINITY Platform<br/>Oracle APEX"]
-    AUTHORS["Authors"]
-    CATEGORIES["Categories"]
-    POSTS["Posts"]
-    DB["WKSP_TRINITY"]
-
-    ADMIN --> APEX
-    APEX --> AUTHORS
-    APEX --> CATEGORIES
-    APEX --> POSTS
-    AUTHORS --> DB
-    CATEGORIES --> DB
-    POSTS --> DB
-```
+OCI Object Storage is currently used as a media repository for selected image assets. TRINITY stores the object URL in the database and Oracle APEX renders the referenced image. Object Storage is not represented as a replacement for the APEX application runtime.
 
 ---
 
-## Current Capabilities
+## Current Application Scope
 
-### Implemented
+The current Oracle APEX application is primarily an authenticated administrative CMS.
 
-- Relational content model designed with Oracle Quick SQL.
-- Oracle DDL for authors, categories, posts, tags, post/tag relationships, events, and certifications.
-- Identity-based primary keys.
-- Foreign-key relationships between posts, authors, categories, and tags.
-- Supporting indexes for relational access paths.
-- Automatic `CREATED`, `CREATED_BY`, `UPDATED`, and `UPDATED_BY` auditing.
-- Oracle APEX administrative pages for Authors, Categories, and Posts.
-- List of Values integration for author and category relationships.
-- Controlled post lifecycle using `DRAFT`, `PUBLISHED`, and `ARCHIVED` states.
-- Automatic URL-friendly slug generation from post titles using an APEX Dynamic Action.
+```text
+TRINITY Platform
+│
+├── Global Page
+├── Home
+├── Posts
+│   └── Post
+├── Categories
+│   └── Category
+├── Authors
+│   └── Author
+├── Events
+│   └── Event
+├── Certifications
+│   └── Certification
+└── Login Page
+```
+
+The public-facing publishing experience remains in progress.
+
+---
+
+## Implemented Capabilities
+
+### Database and data model
+
+- Relational content model created from Oracle Quick SQL.
+- Seven core tables: `AUTHORS`, `CATEGORIES`, `POSTS`, `TAGS`, `POST_TAGS`, `EVENTS`, and `CERTIFICATIONS`.
+- Identity-generated numeric primary keys.
+- Foreign-key relationships for the publishing model.
+- Supporting indexes for foreign-key access paths.
+- Standard audit columns: `CREATED`, `CREATED_BY`, `UPDATED`, and `UPDATED_BY`.
+- Seven automatic audit triggers.
+- Native Oracle SQL `BOOLEAN` columns where appropriate.
+- Controlled database migrations for changes applied after the original v1 DDL baseline.
+
+### Oracle APEX
+
+- Application 109 — **TRINITY Platform**.
+- 13 application pages.
+- Administrative CRUD for Posts, Categories, Authors, Events, and Certifications.
 - Oracle APEX Accounts authentication.
-- Application-level authorization component for administration.
-- Source-controlled Oracle APEX application export.
-- Controlled architecture portfolio covering OCI topology, use cases, data model, database implementation, APEX publishing flow, and delivery roadmap.
+- Administration authorization scheme.
+- Shared Lists of Values for relational selections.
+- Dynamic Actions for client-side behavior.
+- Automatic slug generation for publishing records.
+- Publication lifecycle control for Posts.
+- Event lifecycle management.
+- Native Boolean handling for Certification active status.
+- Credential verification links in the Certifications report.
 
-### In progress
+### Events
 
-- Public-facing publishing experience.
-- Expanded technical documentation for repeatable deployment.
-- Additional content-management capabilities.
+The Events module supports title, slug, description, event date, location, external event URL, status, featured image URL, and audit metadata.
 
-### Planned
+Selected event images are stored as objects in OCI Object Storage. The database stores the media URL in:
 
-- Public Home, Blog, Article, Categories, About, and Contact experiences.
-- Administrative interfaces for Tags, Events, and Certifications.
-- Media management using OCI Object Storage where appropriate.
-- Custom domain and OCI DNS integration.
-- Additional security hardening and least-privilege review.
-- Expanded observability and operational documentation.
+```text
+EVENTS.FEATURED_IMAGE_URL
+```
 
-Planned capabilities are intentionally separated from the current implementation so that this repository reflects the actual state of the project.
+The current column definition is:
+
+```text
+VARCHAR2(500)
+```
+
+The APEX Events report renders the referenced image from the stored URL.
+
+### Certifications
+
+The Certifications module supports certification name, issuer, credential identifier, credential URL, issue date, expiration date, description, active status, and audit metadata.
+
+The active state uses a native database Boolean:
+
+```text
+CERTIFICATIONS.ACTIVE_YN
+BOOLEAN
+DEFAULT TRUE
+NOT NULL
+```
+
+Oracle APEX presents the value as:
+
+```text
+TRUE  → Yes
+FALSE → No
+```
+
+The Certifications report exposes the credential URL as a concise **Verify** link instead of displaying the complete URL.
 
 ---
 
 ## Data Model
 
-The current database baseline contains seven tables:
-
-| Table | Responsibility |
-|---|---|
-| `AUTHORS` | Author profile and publishing identity |
-| `CATEGORIES` | Content classification |
-| `POSTS` | Primary article and publishing content |
-| `TAGS` | Reusable content tags |
-| `POST_TAGS` | Many-to-many association between posts and tags |
-| `EVENTS` | Technical events and activities |
-| `CERTIFICATIONS` | Professional certification records |
-
-### Core relationships
-
 ```mermaid
 erDiagram
-    AUTHORS ||--o{ POSTS : authors
+    AUTHORS ||--o{ POSTS : writes
     CATEGORIES ||--o{ POSTS : classifies
     POSTS ||--o{ POST_TAGS : has
     TAGS ||--o{ POST_TAGS : maps
@@ -138,8 +165,6 @@ erDiagram
         NUMBER id PK
         VARCHAR2 name
         VARCHAR2 slug
-        VARCHAR2 email
-        CLOB bio
         BOOLEAN active_yn
     }
 
@@ -162,99 +187,132 @@ erDiagram
         BOOLEAN featured_yn
     }
 
-    TAGS {
+    EVENTS {
+        NUMBER id PK
+        VARCHAR2 title
+        VARCHAR2 slug
+        TIMESTAMP event_date
+        VARCHAR2 featured_image_url
+        VARCHAR2 status
+    }
+
+    CERTIFICATIONS {
         NUMBER id PK
         VARCHAR2 name
-        VARCHAR2 slug
-    }
-
-    POST_TAGS {
-        NUMBER id PK
-        NUMBER post_id FK
-        NUMBER tag_id FK
+        VARCHAR2 issuer
+        DATE issued_date
+        DATE expiration_date
+        BOOLEAN active_yn
     }
 ```
 
-`EVENTS` and `CERTIFICATIONS` are currently standalone entities in the v1 database baseline.
+`EVENTS` and `CERTIFICATIONS` remain standalone entities in the current relational model.
 
 ---
 
-## Database Engineering
+## Database Change Strategy
 
-The schema was generated from a Quick SQL model and implemented as Oracle DDL.
+TRINITY preserves the original generated v1 DDL as a baseline:
 
-The current DDL includes:
-
-- 7 `CREATE TABLE` statements.
-- 4 supporting indexes.
-- 7 `BEFORE INSERT OR UPDATE` audit triggers.
-- Identity-generated numeric primary keys.
-- Foreign-key constraints for the core publishing model.
-- Oracle `BOOLEAN` columns for applicable state flags.
-
-The audit triggers resolve the application user from the APEX session when available:
-
-```sql
-coalesce(sys_context('APEX$SESSION','APP_USER'), user)
+```text
+database/ddl/TRINITY_V1_SCHEMA.sql
 ```
 
-This provides application-aware attribution while retaining a database-user fallback outside an APEX session.
+Changes applied after that baseline are captured as ordered migrations:
+
+```text
+database/migrations/
+├── 001_add_event_featured_image.sql
+└── 002_certifications_active_default.sql
+```
+
+This keeps the original generated artifact intact while making subsequent schema evolution explicit and reviewable.
+
+### Migration 001
+
+Adds:
+
+```text
+EVENTS.FEATURED_IMAGE_URL VARCHAR2(500)
+```
+
+### Migration 002
+
+Hardens the existing native Oracle SQL Boolean active-state column by normalizing `NULL` values to `TRUE` and enforcing the final default and nullability rules:
+
+```text
+BOOLEAN
+DEFAULT TRUE
+NOT NULL
+```
 
 ---
 
-## Oracle APEX Implementation
+## Oracle APEX Source
 
-The source-controlled APEX export is:
+The source-controlled APEX application export is:
 
 ```text
 apex/exports/f109.sql
 ```
 
-The current export identifies:
-
-- Application 109 — **TRINITY Platform**
-- Oracle APEX 26.1.3
-- Parsing schema `WKSP_TRINITY`
-- 9 pages
-- 38 page items
-- 12 processes
-- 15 regions
-- 16 buttons
-- 3 Dynamic Actions
-- 3 shared Lists of Values
-- Authentication and authorization components
-- Supporting Objects included in the application export
-
-### Administrative application
-
-The implemented administrative scope currently includes:
+Current verified export characteristics:
 
 ```text
-Home
-├── Posts
-│   └── Post
-├── Categories
-│   └── Category
-└── Authors
-    └── Author
+Application:   109
+Name:          TRINITY Platform
+Pages:         13
+Format:        SQL
+Export type:   Standard Export
 ```
 
-A dedicated Login page and Global Page are also part of the application export.
+Current verified page additions include:
 
-### Slug generation
+```text
+Page 14 — Events
+Page 15 — Event
+Page 16 — Certifications
+Page 17 — Certification
+```
 
-The Post form contains an APEX Dynamic Action that derives a normalized URL-friendly slug from the title.
+Current controlled export SHA-256:
 
-The implementation:
+```text
+df3395e3998d8b8117fee4eace859c579902cc69129793ba18dfe4309e4a6fff
+```
 
-1. Reads the value of `P3_TITLE`.
-2. Normalizes accented characters.
-3. Converts the title to lowercase.
-4. Replaces non-alphanumeric sequences with hyphens.
-5. Removes leading and trailing hyphens.
-6. Writes the result into `P3_SLUG`.
+Oracle-generated APEX exports should be treated as generated source artifacts and should not be manually reformatted.
 
-This behavior is stored as application source inside `f109.sql`.
+---
+
+## OCI Object Storage Media Workflow
+
+```text
+Image file
+   │
+   ▼
+OCI Object Storage
+   │
+   ▼
+Object URL
+   │
+   ▼
+EVENTS.FEATURED_IMAGE_URL
+   │
+   ▼
+Oracle APEX Events report
+   │
+   ▼
+Rendered image
+```
+
+Current boundaries:
+
+- Object Storage is implemented for selected media assets.
+- Image upload is currently handled outside the APEX application.
+- APEX stores and renders the resulting object URL.
+- No dedicated OCI Compute instance is used.
+- A custom domain and OCI DNS are not yet part of the deployed baseline.
 
 ---
 
@@ -264,141 +322,122 @@ This behavior is stored as application source inside `f109.sql`.
 Trinity/
 ├── README.md
 ├── .gitignore
-│
+├── .gitattributes
 ├── apex/
 │   ├── README.md
 │   └── exports/
 │       └── f109.sql
-│
 ├── database/
 │   ├── README.md
 │   ├── ddl/
 │   │   └── TRINITY_V1_SCHEMA.sql
+│   ├── migrations/
+│   │   ├── 001_add_event_featured_image.sql
+│   │   └── 002_certifications_active_default.sql
 │   └── quicksql/
 │       └── trinity-v1.quicksql
-│
 ├── docs/
 │   ├── architecture/
-│   │   ├── README.md
-│   │   ├── 01-physical-oci-topology-trinity-v1.png
-│   │   ├── 02-use-case-diagram-trinity.png
-│   │   ├── 03-erd-trinity-v1-schema.png
-│   │   ├── 04-database-implementation-ddl-dml.png
-│   │   ├── 05-apex-dml-publishing-flow.png
-│   │   └── 06-delivery-roadmap-trinity.png
+│   │   └── README.md
 │   └── decisions/
-│       └── ADR-001-platform-baseline.md
-│
+│       ├── ADR-001-platform-baseline.md
+│       └── ADR-002-object-storage-media.md
 └── assets/
     └── README.md
 ```
 
-The repository deliberately separates executable source, database artifacts, architecture documentation, and engineering decisions.
-
 ---
 
-## Source Artifacts
+## Current vs. In Progress vs. Planned
 
-### `database/quicksql/trinity-v1.quicksql`
+### Current
 
-The original Quick SQL model used to define the v1 relational baseline.
+- Oracle Autonomous AI Database 26ai.
+- Oracle APEX Application 109.
+- Authenticated administrative CMS.
+- Posts, Categories, and Authors administration.
+- Events administration with featured image URL support.
+- Certifications administration with native Boolean active state.
+- OCI Object Storage for selected event media.
+- Git/GitHub source control.
+- Database migrations.
+- Architecture documentation and ADRs.
 
-### `database/ddl/TRINITY_V1_SCHEMA.sql`
+### In progress
 
-Generated and executed Oracle DDL containing the physical schema, indexes, constraints, and automatic audit triggers.
+- Public-facing publishing experience.
+- Public Events and Certifications presentation.
+- Expanded deployment documentation.
+- Updated architecture visuals reflecting the latest Object Storage media path.
+- Additional content-management capabilities.
 
-### `apex/exports/f109.sql`
+### Planned
 
-Standard Oracle APEX application export intended for source control.
+- Public Home.
+- Public Blog / Articles.
+- Public Events.
+- Public Certifications.
+- About and Contact experiences.
+- Administrative management for Tags.
+- More integrated media-management workflow.
+- Custom domain.
+- OCI DNS.
+- Additional security hardening.
+- Expanded observability and operational documentation.
 
-Oracle-generated APEX export files should be treated as generated source artifacts and should not be manually edited without a specific technical reason.
-
----
-
-## Reproducibility Notes
-
-TRINITY is being organized so that its database and APEX application sources can be independently reviewed and versioned.
-
-At a high level, a compatible Oracle environment would require:
-
-1. An Oracle Database environment supporting the database features used by the schema.
-2. Oracle APEX compatible with the application export.
-3. A target workspace and parsing schema.
-4. Deployment of the database model.
-5. Import and validation of the Oracle APEX application.
-
-Environment-specific installation instructions will be documented separately as the deployment process is formalized.
-
-> Do not execute repository SQL against a production environment without first reviewing the schema, target owner, application mappings, and deployment impact.
-
----
-
-## Architecture Decisions
-
-Significant engineering choices are documented using Architecture Decision Records.
-
-The first baseline decision is stored at:
-
-```text
-docs/decisions/ADR-001-platform-baseline.md
-```
-
-The ADR documents the current OCI + Autonomous AI Database + Oracle APEX baseline and separates implemented architecture from future enhancements.
+Planned capabilities are intentionally separated from implemented functionality.
 
 ---
 
 ## Engineering Principles
 
-TRINITY follows several baseline principles:
-
-- **Evidence over claims** — implemented functionality is separated from planned functionality.
-- **Database-first integrity** — relationships and business data are modeled explicitly.
-- **Source control by default** — database and APEX sources are preserved in Git.
-- **Traceable architecture** — important technical decisions are documented.
-- **Security by design** — secrets, private keys, tokens, session identifiers, and environment credentials must not be committed.
-- **Minimal operational footprint** — infrastructure is added only when the implementation requires it.
-- **Professional documentation** — repository content should be understandable without relying on undocumented project history.
+- **Evidence over claims** — current functionality is separated from roadmap items.
+- **Database-first integrity** — core data integrity remains owned by Oracle Database.
+- **Source control by default** — database, migrations, APEX exports, architecture, and ADRs are version controlled.
+- **Traceable evolution** — post-baseline schema changes are captured as ordered migrations.
+- **Security by design** — secrets, tokens, private keys, session identifiers, and sensitive account data must not be committed.
+- **Minimal operational footprint** — infrastructure is added only when a concrete requirement justifies it.
+- **Professional documentation** — repository content should be understandable without undocumented project history.
 
 ---
 
 ## Security
 
-This repository is intended to contain application source and technical documentation only.
-
-The following information must never be committed:
+Do not commit:
 
 - OCI private keys.
 - API signing keys.
-- Passwords or authentication secrets.
-- Access tokens.
+- Passwords.
+- Authentication tokens.
 - Active APEX session identifiers.
-- Environment-specific credentials.
+- Oracle Wallet credentials.
+- Private connection credentials.
 - Sensitive personal information.
 - Screenshots containing confidential account data.
 
-Before each public release, repository contents should be reviewed for accidental secret exposure.
+Every public export or release should receive a security review before push.
 
 ---
 
 ## Roadmap
 
-The current engineering direction is:
-
 ```text
-Database baseline
+Relational baseline
         ↓
 APEX administrative CMS
         ↓
-Source-controlled application
+Events + Certifications
+        ↓
+OCI Object Storage media integration
+        ↓
+Source-controlled migrations
         ↓
 Public publishing experience
         ↓
-Media and delivery enhancements
+Custom-domain and delivery enhancements
         ↓
 Operational hardening
 ```
-
-Roadmap items describe direction rather than completed functionality.
 
 ---
 
