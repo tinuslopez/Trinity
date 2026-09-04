@@ -164,9 +164,9 @@ docs/decisions/ADR-002-object-storage-media.md
 
 **File:** `01-physical-oci-topology-trinity-v1.png`
 
-Documents the original v1 physical baseline centered on Oracle Cloud Infrastructure, region `mx-monterrey-1`, Oracle Autonomous AI Database 26ai, the APEX workload, Application 109, and parsing schema `WKSP_TRINITY`.
+Documents the current physical topology centered on Oracle Cloud Infrastructure, region `mx-monterrey-1`, Oracle Autonomous AI Database 26ai, Oracle APEX 26.1.4, Application 109, parsing schema `WKSP_TRINITY`, and OCI Object Storage for selected Event media.
 
-> **Diagram currency note:** OCI Object Storage media integration was implemented after this original v1 topology diagram. Until the image is refreshed, this README and ADR-002 are authoritative for the current media-storage extension.
+The diagram also keeps the external engineering boundary visible and explicitly states that dedicated OCI Compute, a custom domain, and OCI DNS are not part of the deployed runtime.
 
 ### 02 — Use Case Diagram
 
@@ -174,9 +174,9 @@ Documents the original v1 physical baseline centered on Oracle Cloud Infrastruct
 
 **File:** `02-use-case-diagram-trinity.png`
 
-Communicates actors and functional interactions.
+Separates the current authenticated administrative use cases from the public-facing experience that is now the next active phase.
 
-The current implementation has expanded beyond the original administrative publishing use cases to include Events and Certifications administration.
+The current administration includes Posts, Categories, Authors, Events, Certifications, reporting, and engineering traceability. Public article, event, certification, About, and Contact experiences remain in progress.
 
 ### 03 — Entity Relationship Diagram
 
@@ -184,9 +184,7 @@ The current implementation has expanded beyond the original administrative publi
 
 **File:** `03-erd-trinity-v1-schema.png`
 
-Documents the original v1 seven-table relational model.
-
-The table set remains valid. Post-baseline column-level changes are documented through migrations, including:
+Documents the current seven-table relational model while preserving the distinction between the original generated v1 DDL and post-baseline migrations. Current column-level changes include:
 
 ```text
 EVENTS.FEATURED_IMAGE_URL
@@ -199,9 +197,9 @@ CERTIFICATIONS.ACTIVE_YN native BOOLEAN
 
 **File:** `04-database-implementation-ddl-dml.png`
 
-Documents how the logical model becomes Oracle Database structures and how APEX DML interacts with them.
+Documents the traceable implementation chain from Quick SQL to the generated DDL baseline, ordered migrations, the current Autonomous AI Database schema, and Oracle APEX DML.
 
-Current database engineering now includes the original generated DDL baseline, ordered migration scripts, native Oracle SQL Boolean, database defaults and `NOT NULL` enforcement, and URL references to external media objects.
+The current database engineering model preserves the original generated DDL and applies later structural evolution through migrations.
 
 ### 05 — Oracle APEX DML Publishing Flow
 
@@ -209,9 +207,9 @@ Current database engineering now includes the original generated DDL baseline, o
 
 **File:** `05-apex-dml-publishing-flow.png`
 
-Documents the core APEX-to-database publishing flow.
+Documents the current APEX-to-database administrative flow across Posts, Events, and Certifications, including native Boolean handling, credential verification links, database auditing, and the Event media reference path through OCI Object Storage.
 
-The same architectural pattern now also applies to the Events and Certifications forms:
+The core database-persistence pattern remains:
 
 ```text
 Administrator
@@ -235,9 +233,9 @@ Audit Trigger
 
 **File:** `06-delivery-roadmap-trinity.png`
 
-Documents staged platform evolution.
+Documents the implemented milestones, the public front-end as the next active phase, and explicitly planned delivery capabilities such as custom domain, OCI DNS, integrated media management, observability, and operational hardening.
 
-Roadmap elements represent direction and must not be interpreted as completed functionality unless reflected in current repository documentation.
+Roadmap elements are visually separated by Current, In Progress, and Planned status.
 
 ---
 
@@ -411,7 +409,6 @@ OCI
 ```text
 Public publishing experience
 Public Events / Certifications presentation
-Updated physical topology diagram
 Expanded deployment documentation
 Additional content-management capabilities
 ```
@@ -427,6 +424,22 @@ Expanded observability
 Operational hardening
 Potential independent services only if justified
 ```
+
+---
+
+## OCI Iconography
+
+The refreshed diagrams use Oracle OCI service iconography sourced from the project's Draw.io OCI architecture library. Relevant current and planned service icons include:
+
+```text
+Developer Services - APEX
+Database - Autonomous DB
+Storage - Object Storage
+Identity and Security - User
+Networking - DNS
+```
+
+Icons retain their proportions and are not rotated, skewed, shadowed, or recolored outside the restrained Oracle-oriented palette used by the architecture portfolio. The complete source icon library is not redistributed in this repository.
 
 ---
 
