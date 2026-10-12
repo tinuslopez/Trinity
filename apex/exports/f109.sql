@@ -33,7 +33,7 @@ prompt APPLICATION 109 - TRINITY Platform
 -- Application Export:
 --   Application:     109
 --   Name:            TRINITY Platform
---   Date and Time:   19:49 Friday September 4, 2026
+--   Date and Time:   18:36 Friday September 18, 2026
 --   Exported By:     TRINITY_APP
 --   Flashback:       0
 --   Export Type:     Application Export
@@ -107,12 +107,12 @@ wwv_imp_workspace.create_flow(
 ,p_substitution_string_01=>'APP_NAME'
 ,p_substitution_value_01=>'TRINITY Platform'
 ,p_created_on=>wwv_flow_imp.dz('20260814023922Z')
-,p_last_updated_on=>wwv_flow_imp.dz('20260904193241Z')
+,p_last_updated_on=>wwv_flow_imp.dz('20260908044115Z')
 ,p_created_by=>'TRINITY_APP'
 ,p_last_updated_by=>'TRINITY_APP'
 ,p_file_prefix=>nvl(wwv_flow_application_install.get_static_app_file_prefix,'')
 ,p_files_version=>2461267023924
-,p_version_scn=>'15314634173'
+,p_version_scn=>'15391734187'
 ,p_print_server_type=>'NATIVE'
 ,p_file_storage=>'DB'
 ,p_is_pwa=>'Y'
