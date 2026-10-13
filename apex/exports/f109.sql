@@ -19,7 +19,7 @@ whenever sqlerror exit sql.sqlcode rollback
 begin
 wwv_flow_imp.import_begin (
  p_version_yyyy_mm_dd=>'2026.03.30'
-,p_release=>'26.1.4'
+,p_release=>'26.1.5'
 ,p_default_workspace_id=>8887149164003934
 ,p_default_application_id=>109
 ,p_default_id_offset=>0
@@ -33,7 +33,7 @@ prompt APPLICATION 109 - TRINITY Platform
 -- Application Export:
 --   Application:     109
 --   Name:            TRINITY Platform
---   Date and Time:   18:36 Friday September 18, 2026
+--   Date and Time:   20:05 Tuesday October 13, 2026
 --   Exported By:     TRINITY_APP
 --   Flashback:       0
 --   Export Type:     Application Export
@@ -54,6 +54,7 @@ prompt APPLICATION 109 - TRINITY Platform
 --       Security:
 --         Authentication:         1
 --         Authorization:          1
+--         ACL Roles:              1
 --       User Interface:
 --         Themes:                 1
 --         Templates:
@@ -63,7 +64,7 @@ prompt APPLICATION 109 - TRINITY Platform
 --       Reports:
 --       E-Mail:
 --     Supporting Objects:  Included
---   Version:         26.1.4
+--   Version:         26.1.5
 --   Instance ID:     8749279359687043
 --
 
@@ -101,18 +102,19 @@ wwv_imp_workspace.create_flow(
 ,p_flow_status=>'AVAILABLE_W_EDIT_LINK'
 ,p_browser_cache=>'N'
 ,p_browser_frame=>'D'
+,p_security_scheme=>wwv_flow_imp.id(10169283800813200)
 ,p_authorize_batch_job=>'N'
 ,p_rejoin_existing_sessions=>'N'
 ,p_csv_encoding=>'Y'
 ,p_substitution_string_01=>'APP_NAME'
 ,p_substitution_value_01=>'TRINITY Platform'
 ,p_created_on=>wwv_flow_imp.dz('20260814023922Z')
-,p_last_updated_on=>wwv_flow_imp.dz('20260908044115Z')
+,p_last_updated_on=>wwv_flow_imp.dz('20261013145342Z')
 ,p_created_by=>'TRINITY_APP'
 ,p_last_updated_by=>'TRINITY_APP'
 ,p_file_prefix=>nvl(wwv_flow_application_install.get_static_app_file_prefix,'')
 ,p_files_version=>2461267023924
-,p_version_scn=>'15391734187'
+,p_version_scn=>'16402062272'
 ,p_print_server_type=>'NATIVE'
 ,p_file_storage=>'DB'
 ,p_is_pwa=>'Y'
@@ -1053,14 +1055,30 @@ wwv_flow_imp_shared.create_security_scheme(
 ,p_static_id=>'administration-rights'
 ,p_scheme_type=>'NATIVE_FUNCTION_BODY'
 ,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
-  'plsql_function_body', 'return true;')).to_clob
+  'plsql_function_body', wwv_flow_string.join(wwv_flow_t_varchar2(
+    'return apex_acl.has_user_role(',
+    '    p_application_id => :APP_ID,',
+    '    p_user_name      => :APP_USER,',
+    '    p_role_static_id => ''ADMINISTRATOR''',
+    ');')))).to_clob
 ,p_error_message=>'Insufficient privileges, user is not an Administrator'
-,p_version_scn=>'SH256:K94FzTYWdjDQ6WIg6w48Or20nhyD_tWnqCuRh9rK4CU'
+,p_version_scn=>'SH256:G3fA6fKFaQTs-wFFLrPSHEl8MHgcNh4i5QKSuMfQwxc'
 ,p_caching=>'BY_USER_BY_PAGE_VIEW'
 ,p_created_on=>wwv_flow_imp.dz('20260814023924Z')
-,p_updated_on=>wwv_flow_imp.dz('20260814023925Z')
+,p_updated_on=>wwv_flow_imp.dz('20261013145342Z')
 ,p_created_by=>'TRINITY_APP'
 ,p_updated_by=>'TRINITY_APP'
+);
+end;
+/
+prompt --application/shared_components/security/app_access_control/administrator
+begin
+wwv_flow_imp_shared.create_acl_role(
+ p_id=>wwv_flow_imp.id(22022221608561460)
+,p_static_id=>'ADMINISTRATOR'
+,p_name=>'Administrator'
+,p_description=>'Full administrative access to TRINITY Platform CMS.'
+,p_version_scn=>'SH256:xqpuijfuP-8O3J2VI7JzIqiOjNszfdq7oSOmR8VZpIE'
 );
 end;
 /
