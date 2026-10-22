@@ -33,7 +33,7 @@ prompt APPLICATION 109 - TRINITY Platform
 -- Application Export:
 --   Application:     109
 --   Name:            TRINITY Platform
---   Date and Time:   20:05 Tuesday October 13, 2026
+--   Date and Time:   19:30 Thursday October 22, 2026
 --   Exported By:     TRINITY_APP
 --   Flashback:       0
 --   Export Type:     Application Export
@@ -43,7 +43,7 @@ prompt APPLICATION 109 - TRINITY Platform
 --       Processes:               18
 --       Regions:                 23
 --       Buttons:                 26
---       Dynamic Actions:          6
+--       Dynamic Actions:          7
 --     Shared Components:
 --       Logic:
 --         Build Options:          1
@@ -109,12 +109,12 @@ wwv_imp_workspace.create_flow(
 ,p_substitution_string_01=>'APP_NAME'
 ,p_substitution_value_01=>'TRINITY Platform'
 ,p_created_on=>wwv_flow_imp.dz('20260814023922Z')
-,p_last_updated_on=>wwv_flow_imp.dz('20261013145342Z')
+,p_last_updated_on=>wwv_flow_imp.dz('20261022184512Z')
 ,p_created_by=>'TRINITY_APP'
 ,p_last_updated_by=>'TRINITY_APP'
 ,p_file_prefix=>nvl(wwv_flow_application_install.get_static_app_file_prefix,'')
 ,p_files_version=>2461267023924
-,p_version_scn=>'16402062272'
+,p_version_scn=>'16724419878'
 ,p_print_server_type=>'NATIVE'
 ,p_file_storage=>'DB'
 ,p_is_pwa=>'Y'
@@ -2816,7 +2816,7 @@ wwv_flow_imp_page.create_page(
 ,p_protection_level=>'C'
 ,p_page_component_map=>'02'
 ,p_created_on=>wwv_flow_imp.dz('20260816063346Z')
-,p_last_updated_on=>wwv_flow_imp.dz('20260816063531Z')
+,p_last_updated_on=>wwv_flow_imp.dz('20261022184512Z')
 ,p_created_by=>'TRINITY_APP'
 ,p_last_updated_by=>'TRINITY_APP'
 );
@@ -3137,6 +3137,48 @@ wwv_flow_imp_page.create_page_item(
   'value_protected', 'Y')).to_clob
 ,p_created_on=>wwv_flow_imp.dz('20260816063346Z')
 ,p_updated_on=>wwv_flow_imp.dz('20260816063531Z')
+,p_created_by=>'TRINITY_APP'
+,p_updated_by=>'TRINITY_APP'
+);
+wwv_flow_imp_page.create_page_da_event(
+ p_id=>wwv_flow_imp.id(24621548316573205)
+,p_name=>'CMS-001 Generate Slug'
+,p_static_id=>'cms-001-generate-slug'
+,p_event_sequence=>10
+,p_triggering_element_type=>'ITEM'
+,p_triggering_element=>'P9_NAME'
+,p_bind_type=>'bind'
+,p_execution_type=>'IMMEDIATE'
+,p_bind_event_type=>'change'
+,p_created_on=>wwv_flow_imp.dz('20261022183934Z')
+,p_updated_on=>wwv_flow_imp.dz('20261022184512Z')
+,p_created_by=>'TRINITY_APP'
+,p_updated_by=>'TRINITY_APP'
+);
+wwv_flow_imp_page.create_page_da_action(
+ p_id=>wwv_flow_imp.id(24621788671573207)
+,p_event_id=>wwv_flow_imp.id(24621548316573205)
+,p_event_result=>'TRUE'
+,p_action_sequence=>20
+,p_execute_on_page_init=>'N'
+,p_static_id=>'native-set-value'
+,p_action=>'NATIVE_SET_VALUE'
+,p_affected_elements_type=>'ITEM'
+,p_affected_elements=>'P9_SLUG'
+,p_attributes=>wwv_flow_t_plugin_attributes(wwv_flow_t_varchar2(
+  'js_expression', wwv_flow_string.join(wwv_flow_t_varchar2(
+    '($v("P9_NAME") || "")',
+    '  .normalize("NFD")',
+    '  .replace(/[\u0300-\u036f]/g, "")',
+    '  .toLowerCase()',
+    '  .trim()',
+    '  .replace(/[^a-z0-9]+/g, "-")',
+    '  .replace(/^-+|-+$/g, "")')),
+  'suppress_change_event', 'N',
+  'type', 'JAVASCRIPT_EXPRESSION')).to_clob
+,p_wait_for_result=>'Y'
+,p_created_on=>wwv_flow_imp.dz('20261022183934Z')
+,p_updated_on=>wwv_flow_imp.dz('20261022184357Z')
 ,p_created_by=>'TRINITY_APP'
 ,p_updated_by=>'TRINITY_APP'
 );
